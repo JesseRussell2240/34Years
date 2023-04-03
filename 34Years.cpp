@@ -92,6 +92,7 @@ added auto save game between all rooms
 #include <string.h>
 #include <io.h>
 #include <stdlib.h>
+#include <time.h> 
 
 //remove errors for non _s input
 //should eventually remove to Ruliability and robustnes
@@ -172,6 +173,7 @@ void map();
 int talkingToGuard();
 void talkingToInmate();
 
+char* getRandomHint();
 int sentenceFilter(char* sentence, char* word1, char* word2);
 char* userInput(char message[]);
 
@@ -868,7 +870,7 @@ int sentenceFilter(char* sentence, char* word1, char* word2) {
 //userinput validation and global messege handing inorder to ensure users type in valid or acceptable sentances
 char* userInput(char message[]) {
     char userSentance[100];
-
+    char commandReturn[6] = "error";
     
 /*
 
@@ -898,21 +900,19 @@ char* userInput(char message[]) {
             // Handle "help"
 
             //
+            return commandReturn;
         }
         else if (strcmp(userSentance, "hint") == 0) {
             // Handle "hint"
             //this should enable the 
              // Print the options
-            for (int i = 0; i < MAX_ROWS; i++) {
-                if (strcmp(hint[i], ";") != 0);                   //this should not be a semicolin but this is what was in the CSV--------------------FIX ME
-                 printf("%d. %s\n", i + 1, hint[i]);
-            }
-            return userSentance;
+            char* getRandomHint();
+            return commandReturn;
         }
         else if (strcmp(userSentance, "map") == 0) {
             // Handle "map"
             map();
-            return userSentance;
+            return commandReturn;
         }
         else if (strcmp(userSentance, "inv") == 0) {
             displayUserInventory();
@@ -920,18 +920,18 @@ char* userInput(char message[]) {
         }
         else if (strcmp(userSentance, "save") == 0) {
             saveGame();
-            return userSentance;
+            return commandReturn;
         }
         else if (strcmp(userSentance, "main menu") == 0) {
             saveGame();
             mainMenu();
-            return userSentance;
+            return commandReturn;
            
         }
         else if (strcmp(userSentance, "exit") == 0) {
             saveGame();
             exit(3);
-            return userSentance;
+            return commandReturn;
         }
         else {
             // Handle other input 
@@ -947,6 +947,23 @@ char* userInput(char message[]) {
   
     return userSentance;
 
+}
+
+//function gets a random hint from the active room.
+//validates the hint is useful.
+//this plus one is because row one contains heders
+char* getRandomHint() {
+    // Seed the random number generator with the current time
+    srand(time(NULL));
+
+    // Choose a random index until we find a valid hint
+    int i;
+    do {
+        i = rand() % MAX_ROWS;
+    } while (strcmp(hint[i+1], ";") == 0);
+
+    // Return the selected hint
+    return hint[i+1];
 }
 
 //-----------------------------------location heper functions-------------------------
@@ -992,7 +1009,11 @@ int locationHelper(int location) {
 
     if (matchingWordIndex == 0) {
         printf("I am not sure what you meant... Try doing something else");
-        printf(hint[matchingWordIndex]);
+        for (int i = 0; i < MAX_ROWS; i++) {
+
+            if (strcmp(hint[i], ";") != 0);                   //this should not be a semicolin but this is what was in the CSV--------------------FIX ME ----------this line is also in locationHelper... could mak helper function to repude repetion.
+            printf("%d. %s\n", i + 1, hint[i]);
+        }
     }
     else {
         printf("%s\n", result[matchingWordIndex]);
